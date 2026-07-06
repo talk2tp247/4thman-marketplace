@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  password      String
+  accountType   String   @default("buyer")
+  storeName     String?
+  avatar        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  products      Product[]
+  orders        Order[]  @relation("BuyerOrders")
+  sellerOrders  Order[]  @relation("SellerOrders")
+  reviews       Review[]
+  notifications Notification[]
+  cartItems     CartItem[]
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  category      String
+  price         Float
+  comparePrice  Float?
+  productType   String   @default("digital")
+  stock         String   @default("unlimited")
+  fileUrl       String?
+  image         String   @default("📦")
+  tags          String   @default("")
+  status        String   @default("active")
+  rating        Float    @default(0)
+  reviewCount   Int      @default(0)
+  salesCount    Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  sellerId      String
+  seller        User     @relation(fields: [sellerId], references: [id])
+  reviews       Review[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  orderNumber     String   @unique
+  status          String   @default("pending")
+  total           Float
+  discount        Float    @default(0)
+  shippingAddress String?
+  city            String?
+  state           String?
+  zip             String?
+  country         String?
+  trackingNumber  String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  buyerId         String
+  sellerId        String
+  buyer           User     @relation("BuyerOrders", fields: [buyerId], references: [id])
+  seller          User     @relation("SellerOrders", fields: [sellerId], references: [id])
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  quantity  Int     @default(1)
+  price     Float
+  orderId   String
+  productId String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  text      String
+  helpful   Int      @default(0)
+  verified  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  userId    String
+  productId String
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@unique([userId, productId])
+}
+
+model CartItem {
+  id        String @id @default(cuid())
+  quantity  Int    @default(1)
+  userId    String
+  productId String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@unique([userId, productId])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  type        String
+  title       String
+  description String
+  read        Boolean  @default(false)
+  actionUrl   String?
+  createdAt   DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
