@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: #1F2937;
+  background: #FFFFFF;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#2563EB] text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg;
+  }
+  .btn-gold {
+    @apply bg-[#F59E0B] text-white font-semibold py-3 px-6 rounded-lg hover:bg-amber-600 transition-all duration-200 shadow-md hover:shadow-lg;
+  }
+  .card {
+    @apply bg-[#F8FAFC] rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 p-6;
+  }
+  .input-field {
+    @apply w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all;
+  }
+}
