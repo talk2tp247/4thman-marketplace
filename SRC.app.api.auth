@@ -1,0 +1,516 @@
+src/app/api/auth/register/route.ts
+
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
+
+const prisma = new PrismaClient()
+
+export async function POST(req: Request) {
+  try {
+    const { name, email, password, accountType, storeName } = await req.json()
+
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) {
+      return NextResponse.json({ error: 'Email already registered' }, { status: 400 })
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        accountType,
+        storeName: accountType === 'seller' ? storeName : null,
+      },
+    })
+
+    await prisma.notification.create({
+      data: {
+        userId: user.id,
+        type: 'system',
+        title: 'Welcome to 4thMan!',
+        description: `Welcome${accountType === 'seller' ? ' seller' : ''}! Start exploring products${accountType === 'seller' ? ' or list your first product' : ''}.`,
+      },
+    })
+
+    return NextResponse.json({ id: user.id, name: user.name, email: user.email, accountType: user.accountType }, { status: 201 })
+  } catch (error) {
+    return NextResponse.json({ error: 'Registration failed' }, { status: 500 })
+  }
+}
+File 35: src/app/api/auth/signin/route.ts
+
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
+
+const prisma = new PrismaClient()
+
+export async function POST(req: Request) {
+  try {
+    const { email, password } = await req.json()
+
+    const user = await prisma.user.findUnique({ where: { email } })
+    if (!user) {
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+    }
+
+    const validPassword = await bcrypt.compare(password, user.password)
+    if (!validPassword) {
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+    }
+
+    return NextResponse.json({
+      id: user.id, name: user.name, email: user.email,
+      accountType: user.accountType, storeName: user.storeName,
+    })
+  } catch (error) {
+    return NextResponse.json({ error: 'Sign in failed' }, { status: 500 })
+  }
+}
+File 36: src/app/api/products/route.ts
+
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const category = searchParams.get('category') || ''
+  const search = searchParams.get('search') || ''
+  const sort = searchParams.get('sort') || 'newest'
+  const page = parseInt(searchParams.get('page') || '1')
+  const limit = 12
+  const skip = (page - 1) * limit
+
+  const where: any = { status: 'active' }
+  if (category && category !== 'All') where.category = category
+  if (search) where.title = { contains: search, mode: 'insensitive' }
+
+  let orderBy: any = { createdAt: 'desc' }
+  if (sort === 'price_asc') orderBy = { price: 'asc' }
+  if (sort === 'price_desc') orderBy = { price: 'desc' }
+  if (sort === 'rating') orderBy = { rating: 'desc' }
+  if (sort === 'popular') orderBy = { salesCount: 'desc' }
+
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      where, orderBy, skip, take: limit,
+      include: { seller: { select: { name: true, storeName: true } } },
+    }),
+    prisma.product.count({ where }),
+  ])
+
+  return NextResponse.json({ products, total, page, totalPages: Math.ceil(total / limit) })
+}
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json()
+    const { title, description, category, price, comparePrice, productType, stock, fileUrl, tags, sellerId } = body
+
+    const product = await prisma.product.create({
+      data: {
+        title, description, category, price: parseFloat(price),
+        comparePrice: comparePrice ? parseFloat(comparePrice) : null,
+        productType, stock: productType === 'digital' ? 'unlimited' : stock,
+        fileUrl: productType === 'digital' ? fileUrl : null, tags, sellerId,
+      },
+    })
+
+    const admins = await prisma.user.findMany({ where: { accountType: 'admin' } })
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: { userId: admin.id, type: 'system', title: 'New Product Listed', description: `"${title}" has been listed.` },
+      })
+    }
+
+    return NextResponse.json(product, { status: 201 })
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to create product' }, { status: 500 })
+  }
+}
+File 37: src/app/api/orders/route.ts
+
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const sellerId = searchParams.get('sellerId')
+  const buyerId = searchParams.get('buyerId')
+  const status = searchParams.get('status')
+
+  const where: any = {}
+  if (sellerId) where.sellerId = sellerId
+  if (buyerId) where.buyerId = buyerId
+  if (status && status !== 'All') where.status = status.toLowerCase()
+
+  const orders = await prisma.order.findMany({
+    where, orderBy: { createdAt: 'desc' },
+    include: { items: { include: { product: true } }, buyer: { select: { name: true, email: true } } },
+  })
+
+  return NextResponse.json(orders)
+}
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json()
+    const { buyerId, items, shippingAddress, city, state, zip, country } = body
+
+    let total = 0
+    const orderItems = items.map((item: any) => {
+      total += item.price * item.quantity
+      return { productId: item.productId, quantity: item.quantity, price: item.price }
+    })
+
+    const firstProduct = await prisma.product.findUnique({ where: { id: items[0].productId } })
+    if (!firstProduct) throw new Error('Product not found')
+
+    const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}`
+
+    const order = await prisma.order.create({
+      data: {
+        orderNumber, buyerId, sellerId: firstProduct.sellerId, total,
+        shippingAddress, city, state, zip, country,
+        items: { create: orderItems },
+      },
+    })
+
+    for (const item of items) {
+      await prisma.product.update({
+        where: { id: item.productId },
+        data: { salesCount: { increment: item.quantity } },
+      })
+    }
+
+    await prisma.notification.create({
+      data: { userId: firstProduct.sellerId, type: 'order', title: 'New Order Received!', description: `Order ${orderNumber} - $${total.toFixed(2)}`, actionUrl: '/dashboard/seller/orders' },
+    })
+
+    await prisma.notification.create({
+      data: { userId: buyerId, type: 'order', title: 'Order Placed Successfully', description: `Order ${orderNumber} has been placed.`, actionUrl: `/orders/${order.id}` },
+    })
+
+    return NextResponse.json(order, { status: 201 })
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const { orderId, status, trackingNumber } = await req.json()
+    const updateData: any = { status }
+    if (trackingNumber) updateData.trackingNumber = trackingNumber
+
+    const order = await prisma.order.update({
+      where: { id: orderId }, data: updateData,
+      include: { buyer: { select: { id: true, name: true } } },
+    })
+
+    const statusMessages: Record<string, string> = {
+      processing: 'Your order is being processed.',
+      shipped: `Your order has been shipped!${trackingNumber ? ` Tracking: ${trackingNumber}` : ''}`,
+      delivered: 'Your order has been delivered!',
+      cancelled: 'Your order has been cancelled.',
+    }
+
+    if (statusMessages[status]) {
+      await prisma.notification.create({
+        data: {
+          userId: order.buyerId, type: status === 'shipped' ? 'shipping' : 'order',
+          title: `Order ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+          description: `Order ${order.orderNumber}: ${statusMessages[status]}`,
+          actionUrl: `/orders/${order.id}`,
+        },
+      })
+    }
+
+    return NextResponse.json(order)
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to update order' }, { status: 500 })
+  }
+}
+File 38: src/app/api/reviews/route.ts
+
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const productId = searchParams.get('productId')
+  const sort = searchParams.get('sort') || 'recent'
+
+  if (!productId) return NextResponse.json({ error: 'Product ID required' }, { status: 400 })
+
+  let orderBy: any = { createdAt: 'desc' }
+  if (sort === 'highest') orderBy = { rating: 'desc' }
+  if (sort === 'lowest') orderBy = { rating: 'asc' }
+  if (sort === 'helpful') orderBy = { helpful: 'desc' }
+
+  const reviews = await prisma.review.findMany({
+    where: { productId }, orderBy,
+    include: { user: { select: { name: true } } },
+  })
+
+  const stats = await prisma.review.groupBy({
+    by: ['rating'], where: { productId }, _count: true,
+  })
+
+  const average = reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0
+
+  return NextResponse.json({ reviews, stats, average, total: reviews.length })
+}
+
+export async function POST(req: Request) {
+  try {
+    const { userId, productId, rating, text } = await req.json()
+
+    const existing = await prisma.review.findUnique({
+      where: { userId_productId: { userId, productId } },
+    })
+    if (existing) {
+      return NextResponse.json({ error: 'You already reviewed this product' }, { status: 400 })
+    }
+
+    const review = await prisma.review.create({
+      data: { userId, productId, rating, text },
+    })
+
+    const allReviews = await prisma.review.findMany({ where: { productId } })
+    const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
+
+    await prisma.product.update({
+      where: { id: productId },
+      data: { rating: Math.round(avgRating * 10) / 10, reviewCount: allReviews.length },
+    })
+
+    const product = await prisma.product.findUnique({ where: { id: productId }, include: { seller: true } })
+    if (product) {
+      await prisma.notification.create({
+        data: { userId: product.sellerId, type: 'review', title: `New ${rating}-Star Review`, description: `Someone left a ${rating}-star review on "${product.title}"`, actionUrl: `/products/${productId}` },
+      })
+    }
+
+    return NextResponse.json(review, { status: 201 })
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to submit review' }, { status: 500 })
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const { reviewId } = await req.json()
+    const review = await prisma.review.update({
+      where: { id: reviewId }, data: { helpful: { increment: 1 } },
+    })
+    return NextResponse.json(review)
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to update review' }, { status: 500 })
+  }
+}
+File 39: src/app/api/cart/route.ts
+
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const userId = searchParams.get('userId')
+  if (!userId) return NextResponse.json({ error: 'User ID required' }, { status: 400 })
+
+  const items = await prisma.cartItem.findMany({
+    where: { userId }, include: { product: true },
+  })
+
+  return NextResponse.json(items)
+}
+
+export async function POST(req: Request) {
+  try {
+    const { userId, productId, quantity } = await req.json()
+
+    const existing = await prisma.cartItem.findUnique({
+      where: { userId_productId: { userId, productId } },
+    })
+
+    if (existing) {
+      const updated = await prisma.cartItem.update({
+        where: { id: existing.id },
+        data: { quantity: existing.quantity + (quantity || 1) },
+      })
+      return NextResponse.json(updated)
+    }
+
+    const item = await prisma.cartItem.create({
+      data: { userId, productId, quantity: quantity || 1 },
+    })
+
+    return NextResponse.json(item, { status: 201 })
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to add to cart' }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const itemId = searchParams.get('itemId')
+  if (!itemId) return NextResponse.json({ error: 'Item ID required' }, { status: 400 })
+
+  await prisma.cartItem.delete({ where: { id: itemId } })
+  return NextResponse.json({ success: true })
+}
+File 40: src/app/api/notifications/route.ts
+
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const userId = searchParams.get('userId')
+  if (!userId) return NextResponse.json({ error: 'User ID required' }, { status: 400 })
+
+  const notifications = await prisma.notification.findMany({
+    where: { userId }, orderBy: { createdAt: 'desc' }, take: 50,
+  })
+
+  const unreadCount = notifications.filter(n => !n.read).length
+  return NextResponse.json({ notifications, unreadCount })
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const { userId, notificationId, markAll } = await req.json()
+
+    if (markAll) {
+      await prisma.notification.updateMany({
+        where: { userId, read: false }, data: { read: true },
+      })
+    } else if (notificationId) {
+      await prisma.notification.update({
+        where: { id: notificationId }, data: { read: true },
+      })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to update notifications' }, { status: 500 })
+  }
+}
+File 41: src/app/api/dashboard/route.ts
+
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const userId = searchParams.get('userId')
+  const type = searchParams.get('type')
+
+  if (!userId) return NextResponse.json({ error: 'User ID required' }, { status: 400 })
+
+  if (type === 'buyer') {
+    const [totalOrders, activeOrders, wishlistCount, reviewCount, recentOrders] = await Promise.all([
+      prisma.order.count({ where: { buyerId: userId } }),
+      prisma.order.count({ where: { buyerId: userId, status: { in: ['pending', 'processing', 'shipped'] } } }),
+      prisma.cartItem.count({ where: { userId } }),
+      prisma.review.count({ where: { userId } }),
+      prisma.order.findMany({ where: { buyerId: userId }, orderBy: { createdAt: 'desc' }, take: 5, include: { items: { include: { product: true } } } }),
+    ])
+    return NextResponse.json({ totalOrders, activeOrders, wishlistCount, reviewCount, recentOrders })
+  }
+
+  if (type === 'seller') {
+    const [totalProducts, totalSales, totalRevenue, averageRating, recentOrders, products] = await Promise.all([
+      prisma.product.count({ where: { sellerId: userId } }),
+      prisma.orderItem.aggregate({ where: { order: { sellerId: userId } }, _sum: { quantity: true } }),
+      prisma.order.aggregate({ where: { sellerId: userId }, _sum: { total: true } }),
+      prisma.product.aggregate({ where: { sellerId: userId }, _avg: { rating: true } }),
+      prisma.order.findMany({ where: { sellerId: userId }, orderBy: { createdAt: 'desc' }, take: 5, include: { buyer: { select: { name: true } }, items: { include: { product: true } } } }),
+      prisma.product.findMany({ where: { sellerId: userId }, orderBy: { salesCount: 'desc' } }),
+    ])
+    return NextResponse.json({ totalProducts, totalSales: totalSales._sum.quantity || 0, totalRevenue: totalRevenue._sum.total || 0, averageRating: averageRating._avg.rating || 0, recentOrders, products })
+  }
+
+  if (type === 'admin') {
+    const [totalUsers, totalProducts, totalOrders, totalRevenue] = await Promise.all([
+      prisma.user.count(), prisma.product.count(), prisma.order.count(),
+      prisma.order.aggregate({ _sum: { total: true } }),
+    ])
+    return NextResponse.json({ totalUsers, totalProducts, totalOrders, totalRevenue: totalRevenue._sum.total || 0 })
+  }
+
+  return NextResponse.json({ error: 'Invalid dashboard type' }, { status: 400 })
+}
+🎉 ALL 41 FILES ARE NOW COMPLETE!
+Here's the complete project structure:
+
+4thman-marketplace/
+├── 📄 package.json                        # Dependencies & scripts
+├── 📄 tailwind.config.js                  # Theme config
+├── 📄 next.config.js                      # Next.js config
+├── 📄 postcss.config.js                   # CSS config
+├── 📄 tsconfig.json                       # TypeScript config
+├── 📄 .env                                # Environment vars
+├── 📁 prisma/
+│   ├── 📄 schema.prisma                   # Database schema (8 models)
+│   └── 📄 seed.ts                         # Sample data (3 users + 3 products)
+├── 📁 src/
+│   ├── 📄 app/
+│   │   ├── 📄 globals.css                 # Global styles
+│   │   ├── 📄 layout.tsx                  # Root layout
+│   │   ├── 📄 page.tsx                    # Landing page
+│   │   ├── 📁 auth/
+│   │   │   ├── 📁 signin/page.tsx         # Sign in page
+│   │   │   └── 📁 register/page.tsx       # Register page
+│   │   ├── 📁 products/
+│   │   │   ├── 📄 page.tsx                # Browse products
+│   │   │   └── 📄 [id]/page.tsx           # Product detail
+│   │   ├── 📄 cart/page.tsx               # Shopping cart
+│   │   ├── 📄 checkout/page.tsx           # Checkout
+│   │   ├── 📄 orders/[id]/page.tsx        # Order tracking
+│   │   ├── 📄 notifications/page.tsx      # Notifications page
+│   │   ├── 📁 dashboard/
+│   │   │   ├── 📁 buyer/page.tsx          # Buyer dashboard
+│   │   │   ├── 📁 seller/
+│   │   │   │   ├── 📄 page.tsx            # Seller dashboard
+│   │   │   │   ├── 📄 orders/page.tsx     # Seller order management
+│   │   │   │   └── 📄 add-product/page.tsx # Add product form
+│   │   │   └── 📁 admin/page.tsx          # Admin dashboard
+│   │   └── 📁 api/                        # Backend API
+│   │       ├── 📁 auth/
+│   │       │   ├── 📁 register/route.ts
+│   │       │   └── 📁 signin/route.ts
+│   │       ├── 📄 products/route.ts
+│   │       ├── 📄 orders/route.ts
+│   │       ├── 📄 reviews/route.ts
+│   │       ├── 📄 cart/route.ts
+│   │       ├── 📄 notifications/route.ts
+│   │       └── 📄 dashboard/route.ts
+│   └── 📁 components/
+│       ├── 📄 Header.tsx                  # Navigation header
+│       ├── 📄 Footer.tsx                  # Site footer
+│       ├── 📄 HeroSection.tsx             # Hero banner
+│       ├── 📄 Categories.tsx              # Category grid
+│       ├── 📄 FeaturedProducts.tsx        # Featured products
+│       ├── 📄 WhyChoose.tsx               # Benefits section
+│       ├── 📄 BecomeSeller.tsx            # Seller CTA
+│       ├── 📄 Testimonials.tsx            # User reviews
+│       ├── 📄 ReviewSystem.tsx            # Review component
+│       └── 📄 NotificationDropdown.tsx    # Notification bell

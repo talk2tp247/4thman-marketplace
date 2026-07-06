@@ -1,0 +1,373 @@
+src/app/globals.css
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-blue: #2563EB;
+  --brand-gold: #F59E0B;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: #1F2937;
+  background: #FFFFFF;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-blue text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg;
+  }
+  .btn-gold {
+    @apply bg-brand-gold text-white font-semibold py-3 px-6 rounded-lg hover:bg-amber-600 transition-all duration-200 shadow-md hover:shadow-lg;
+  }
+  .card {
+    @apply bg-surface rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 p-6;
+  }
+  .input-field {
+    @apply w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent transition-all;
+  }
+}
+File 10: src/app/layout.tsx
+
+import type { Metadata } from 'next'
+import './globals.css'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
+
+export const metadata: Metadata = {
+  title: '4thMan - Global Marketplace',
+  description: 'Buy and sell physical and digital products worldwide',
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow">{children}</main>
+        <Footer />
+      </body>
+    </html>
+  )
+}
+File 11: src/app/page.tsx
+
+import HeroSection from '@/components/HeroSection'
+import Categories from '@/components/Categories'
+import FeaturedProducts from '@/components/FeaturedProducts'
+import WhyChoose from '@/components/WhyChoose'
+import BecomeSeller from '@/components/BecomeSeller'
+import Testimonials from '@/components/Testimonials'
+
+export default function Home() {
+  return (
+    <>
+      <HeroSection />
+      <Categories />
+      <FeaturedProducts />
+      <WhyChoose />
+      <BecomeSeller />
+      <Testimonials />
+    </>
+  )
+}
+File 12: src/components/HeroSection.tsx
+
+import { ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+
+export default function HeroSection() {
+  return (
+    <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8">
+            <div>
+              <span className="inline-block px-4 py-1.5 bg-brand-blue/10 text-brand-blue text-sm font-semibold rounded-full mb-4">🌍 Global Marketplace</span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight">
+                Buy & Sell <span className="text-brand-blue">Worldwide</span>
+              </h1>
+              <p className="mt-4 text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-lg">
+                Connect with millions of buyers and sellers across the globe. Discover unique products, digital assets, and top-tier services.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/products" className="btn-primary inline-flex items-center gap-2">Shop Now <ArrowRight size={18} /></Link>
+              <Link href="/auth/register?type=seller" className="btn-gold inline-flex items-center gap-2">Start Selling <ArrowRight size={18} /></Link>
+            </div>
+            <div className="flex flex-wrap gap-8 pt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center"><span className="text-green-600 dark:text-green-400 text-lg">✓</span></div>
+                <div><p className="text-sm font-semibold text-gray-900 dark:text-white">Secure</p><p className="text-xs text-gray-500 dark:text-gray-400">Payments</p></div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center"><span className="text-blue-600 dark:text-blue-400 text-lg">↗</span></div>
+                <div><p className="text-sm font-semibold text-gray-900 dark:text-white">100K+</p><p className="text-xs text-gray-500 dark:text-gray-400">Products</p></div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center"><span className="text-amber-600 dark:text-amber-400 text-lg">★</span></div>
+                <div><p className="text-sm font-semibold text-gray-900 dark:text-white">4.8</p><p className="text-xs text-gray-500 dark:text-gray-400">Avg Rating</p></div>
+              </div>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center justify-center">
+            <div className="relative">
+              <div className="w-80 h-80 lg:w-96 lg:h-96 bg-gradient-to-br from-brand-blue/20 to-brand-gold/20 rounded-3xl flex items-center justify-center">
+                <div className="text-center"><div className="text-6xl mb-4">🌍</div><p className="text-2xl font-bold text-gray-900 dark:text-white">Global Trade</p><p className="text-gray-500 dark:text-gray-400">at Your Fingertips</p></div>
+              </div>
+              <div className="absolute -top-4 -right-4 bg-white dark:bg-gray-800 shadow-lg rounded-lg px-4 py-2"><p className="text-sm font-semibold text-gray-900 dark:text-white">🔥 Trending</p></div>
+              <div className="absolute -bottom-4 -left-4 bg-white dark:bg-gray-800 shadow-lg rounded-lg px-4 py-2"><p className="text-sm font-semibold text-gray-900 dark:text-white">⭐ Top Rated</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+File 13: src/components/Categories.tsx
+
+import { BookOpen, Monitor, Video, ShoppingBag, Music, Cog } from 'lucide-react'
+import Link from 'next/link'
+
+const categories = [
+  { name: 'eBooks', icon: BookOpen, count: '12,450', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' },
+  { name: 'Software', icon: Monitor, count: '8,230', color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' },
+  { name: 'Online Courses', icon: Video, count: '5,780', color: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' },
+  { name: 'Physical Products', icon: ShoppingBag, count: '45,200', color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' },
+  { name: 'Music & Audio', icon: Music, count: '3,410', color: 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400' },
+  { name: 'Templates', icon: Cog, count: '9,870', color: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400' },
+]
+
+export default function Categories() {
+  return (
+    <section className="py-16 bg-white dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Browse by <span className="text-brand-blue">Category</span></h2>
+          <p className="mt-3 text-gray-600 dark:text-gray-400">Find exactly what you need from our wide selection</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {categories.map((cat) => (
+            <Link key={cat.name} href={`/products?category=${cat.name.toLowerCase()}`} className="card flex flex-col items-center text-center gap-3 p-6 hover:border-brand-blue dark:hover:border-brand-blue cursor-pointer group">
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${cat.color} group-hover:scale-110 transition-transform`}><cat.icon size={24} /></div>
+              <div><p className="font-semibold text-gray-900 dark:text-white">{cat.name}</p><p className="text-xs text-gray-500 dark:text-gray-400">{cat.count} items</p></div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+File 14: src/components/FeaturedProducts.tsx
+
+import { Star, Heart } from 'lucide-react'
+import Link from 'next/link'
+
+const products = [
+  { title: 'Ultimate Web Dev Course', category: 'Online Courses', price: 49.99, rating: 4.8, reviews: 342, image: '🎓', badge: 'Bestseller' },
+  { title: 'Business Pro Template Pack', category: 'Templates', price: 29.99, rating: 4.6, reviews: 128, image: '📁', badge: 'Featured' },
+  { title: 'Digital Marketing eBook', category: 'eBooks', price: 19.99, rating: 4.9, reviews: 567, image: '📚', badge: 'New' },
+  { title: 'Premium Photo Editing Software', category: 'Software', price: 89.99, rating: 4.7, reviews: 234, image: '🖼️', badge: 'Popular' },
+]
+
+export default function FeaturedProducts() {
+  return (
+    <section className="py-16 bg-surface dark:bg-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Featured <span className="text-brand-blue">Products</span></h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Hand-picked top sellers for you</p>
+          </div>
+          <Link href="/products" className="text-brand-blue font-medium hover:underline text-sm">View All →</Link>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {products.map((product) => (
+            <div key={product.title} className="bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group cursor-pointer">
+              <div className="relative h-48 bg-gradient-to-br from-blue-50 to-amber-50 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
+                <span className="text-5xl group-hover:scale-110 transition-transform">{product.image}</span>
+                <span className="absolute top-3 left-3 bg-brand-gold text-white text-xs font-bold px-2.5 py-1 rounded-full">{product.badge}</span>
+                <button className="absolute top-3 right-3 w-8 h-8 bg-white/80 dark:bg-gray-800/80 rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-gray-800"><Heart size={16} className="text-gray-600 dark:text-gray-300" /></button>
+              </div>
+              <div className="p-5 space-y-3">
+                <p className="text-xs text-brand-blue font-medium uppercase tracking-wide">{product.category}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm leading-tight">{product.title}</h3>
+                <div className="flex items-center gap-1.5">
+                  <Star size={14} className="fill-brand-gold text-brand-gold" />
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{product.rating}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">({product.reviews})</span>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-xl font-bold text-gray-900 dark:text-white">${product.price}</span>
+                  <Link href="/cart" className="text-sm font-medium text-brand-blue hover:text-blue-700">Add to Cart</Link>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+File 15: src/components/WhyChoose.tsx
+
+import { Shield, Rocket, HeadphonesIcon, Globe } from 'lucide-react'
+
+const reasons = [
+  { icon: Shield, title: 'Secure Transactions', description: 'Every payment is protected with industry-standard encryption and buyer protection policies.', color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30' },
+  { icon: Rocket, title: 'Fast & Global Shipping', description: 'Sellers ship worldwide with tracking. Digital products delivered instantly after purchase.', color: 'text-amber-600 bg-amber-100 dark:bg-amber-900/30' },
+  { icon: HeadphonesIcon, title: '24/7 Support', description: 'Our team is always ready to help with any questions, issues, or disputes.', color: 'text-green-600 bg-green-100 dark:bg-green-900/30' },
+  { icon: Globe, title: 'Global Community', description: 'Join millions of buyers and sellers from over 190 countries around the world.', color: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30' },
+]
+
+export default function WhyChoose() {
+  return (
+    <section className="py-16 bg-white dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Why Choose <span className="text-brand-blue">4thMan</span>?</h2>
+          <p className="mt-3 text-gray-600 dark:text-gray-400">We make global trading simple, secure, and accessible for everyone</p>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {reasons.map((reason) => (
+            <div key={reason.title} className="card text-center space-y-4">
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto ${reason.color}`}><reason.icon size={28} /></div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{reason.title}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{reason.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+File 16: src/components/BecomeSeller.tsx
+
+import { ArrowRight, CheckCircle } from 'lucide-react'
+import Link from 'next/link'
+
+const benefits = ['List unlimited products', 'Set your own prices', 'Reach a global audience', 'Secure payment processing', 'Detailed sales analytics', '24/7 seller support']
+
+export default function BecomeSeller() {
+  return (
+    <section className="py-16 bg-gradient-to-r from-brand-blue to-blue-700 dark:from-blue-900 dark:to-blue-950">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="text-white space-y-6">
+            <span className="inline-block px-4 py-1.5 bg-white/20 text-white text-sm font-semibold rounded-full">🚀 Start Selling Today</span>
+            <h2 className="text-3xl md:text-4xl font-bold leading-tight">Become a Seller on <span className="text-brand-gold">4thMan</span></h2>
+            <p className="text-blue-100 text-lg">Turn your products into profit. Join thousands of successful sellers growing their business globally.</p>
+            <ul className="space-y-3">
+              {benefits.map((benefit) => (
+                <li key={benefit} className="flex items-center gap-3 text-blue-50"><CheckCircle size={18} className="text-brand-gold flex-shrink-0" /><span>{benefit}</span></li>
+              ))}
+            </ul>
+            <Link href="/auth/register?type=seller" className="inline-flex items-center gap-2 bg-brand-gold text-white font-semibold py-3 px-8 rounded-lg hover:bg-amber-600 transition-all shadow-lg">Start Selling Now <ArrowRight size={18} /></Link>
+          </div>
+          <div className="hidden md:flex items-center justify-center">
+            <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 text-white text-center">
+              <div className="text-6xl mb-4">📈</div>
+              <p className="text-3xl font-bold">$2.4B+</p>
+              <p className="text-blue-200">Total seller earnings</p>
+              <div className="mt-4 border-t border-white/20 pt-4"><p className="text-lg font-semibold">50,000+</p><p className="text-blue-200 text-sm">Active sellers worldwide</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+File 17: src/components/Testimonials.tsx
+
+import { Star } from 'lucide-react'
+
+const testimonials = [
+  { name: 'Sarah Johnson', role: 'Buyer', avatar: '👩‍💼', text: 'I found the perfect digital marketing course here. The transaction was smooth and the support team was incredibly helpful.', rating: 5 },
+  { name: 'Marcus Chen', role: 'Seller', avatar: '👨‍💻', text: '4thMan transformed my freelance business. I went from local clients to selling software templates globally within weeks.', rating: 5 },
+  { name: 'Amara Okafor', role: 'Buyer', avatar: '👩‍🎨', text: 'The best marketplace for digital products. The search filters make it so easy to find exactly what I need.', rating: 5 },
+]
+
+export default function Testimonials() {
+  return (
+    <section className="py-16 bg-surface dark:bg-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">What Our <span className="text-brand-blue">Users Say</span></h2>
+          <p className="mt-3 text-gray-600 dark:text-gray-400">Real stories from our global community</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {testimonials.map((t) => (
+            <div key={t.name} className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-8 space-y-4">
+              <div className="flex gap-1">{[...Array(t.rating)].map((_, i) => (<Star key={i} size={16} className="fill-brand-gold text-brand-gold" />))}</div>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">&ldquo;{t.text}&rdquo;</p>
+              <div className="flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+                <span className="text-2xl">{t.avatar}</span>
+                <div><p className="font-semibold text-gray-900 dark:text-white text-sm">{t.name}</p><p className="text-xs text-gray-500 dark:text-gray-400">{t.role}</p></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+File 18: src/components/Footer.tsx
+
+import Link from 'next/link'
+
+export default function Footer() {
+  return (
+    <footer className="bg-gray-900 dark:bg-black text-gray-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="col-span-2 md:col-span-1">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center"><span className="text-white font-bold text-sm">4M</span></div>
+              <span className="text-xl font-bold text-white">4thMan</span>
+            </div>
+            <p className="text-sm text-gray-400 leading-relaxed">The global marketplace connecting buyers and sellers worldwide. Secure, fast, and built for everyone.</p>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold mb-4">Marketplace</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/products" className="hover:text-brand-gold transition-colors">Browse Products</Link></li>
+              <li><Link href="/products" className="hover:text-brand-gold transition-colors">Categories</Link></li>
+              <li><span className="hover:text-brand-gold transition-colors cursor-pointer">Trending</span></li>
+              <li><span className="hover:text-brand-gold transition-colors cursor-pointer">Deals & Offers</span></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold mb-4">For Sellers</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/auth/register?type=seller" className="hover:text-brand-gold transition-colors">Start Selling</Link></li>
+              <li><span className="hover:text-brand-gold transition-colors cursor-pointer">Seller Guide</span></li>
+              <li><span className="hover:text-brand-gold transition-colors cursor-pointer">Pricing & Fees</span></li>
+              <li><span className="hover:text-brand-gold transition-colors cursor-pointer">Analytics</span></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold mb-4">Support</h4>
+            <ul className="space-y-2 text-sm">
+              <li><span className="hover:text-brand-gold transition-colors cursor-pointer">Help Center</span></li>
+              <li><span className="hover:text-brand-gold transition-colors cursor-pointer">Contact Us</span></li>
+              <li><span className="hover:text-brand-gold transition-colors cursor-pointer">Terms of Service</span></li>
+              <li><span className="hover:text-brand-gold transition-colors cursor-pointer">Privacy Policy</span></li>
+            </ul>
+          </div>
+        </div>
+        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} 4thMan. All rights reserved.</p>
+          <div className="flex gap-6 text-sm text-gray-500"><span>🌍 English (US)</span><span>💵 USD</span></div>
+        </div>
+      </div>
+    </footer>
+  )
+}

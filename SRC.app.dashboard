@@ -1,0 +1,292 @@
+src/app/dashboard/seller/page.tsx
+
+'use client'
+
+import { Package, Plus, DollarSign, TrendingUp, Users, Star, Settings, LogOut, BarChart3 } from 'lucide-react'
+import Link from 'next/link'
+
+const products = [
+  { name: 'Ultimate Web Dev Course', type: 'Digital', price: 49.99, sales: 342, revenue: 17099.58, rating: 4.8, status: 'Active' },
+  { name: 'Business Pro Template Pack', type: 'Digital', price: 29.99, sales: 128, revenue: 3838.72, rating: 4.6, status: 'Active' },
+  { name: 'Premium Photo Editing Software', type: 'Digital', price: 89.99, sales: 234, revenue: 21057.66, rating: 4.7, status: 'Active' },
+]
+
+export default function SellerDashboard() {
+  return (
+    <div className="min-h-screen bg-surface dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="lg:w-64 flex-shrink-0">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <div className="text-center mb-6 pb-6 border-b border-gray-100 dark:border-gray-700">
+                <div className="w-16 h-16 bg-brand-gold rounded-full flex items-center justify-center mx-auto mb-3"><span className="text-2xl text-white font-bold">MS</span></div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">My Store</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">John Doe</p>
+                <span className="inline-block mt-2 px-3 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-brand-gold text-xs font-medium rounded-full">Verified Seller</span>
+              </div>
+              <nav className="space-y-1">
+                {[{ icon: BarChart3, label: 'Overview', active: true }, { icon: Package, label: 'My Products', active: false }, { icon: Plus, label: 'Add Product', active: false }, { icon: DollarSign, label: 'Earnings', active: false }, { icon: Users, label: 'Customers', active: false }, { icon: Star, label: 'Reviews', active: false }, { icon: Settings, label: 'Store Settings', active: false }].map((link) => (
+                  <Link key={link.label} href={link.label === 'Add Product' ? '/dashboard/seller/add-product' : link.label === 'My Products' ? '/dashboard/seller/orders' : '#'} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${link.active ? 'bg-brand-gold text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}><link.icon size={18} />{link.label}</Link>
+                ))}
+                <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-700"><button className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg w-full transition-colors"><LogOut size={18} /> Sign Out</button></div>
+              </nav>
+            </div>
+          </div>
+          <div className="flex-1 space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div><h1 className="text-2xl font-bold text-gray-900 dark:text-white">Seller Dashboard 🚀</h1><p className="text-gray-500 dark:text-gray-400 mt-1">Manage your store and track performance.</p></div>
+                <Link href="/dashboard/seller/add-product" className="btn-primary inline-flex items-center gap-2 text-sm"><Plus size={16} /> Add Product</Link>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"><div className="flex items-center justify-between"><p className="text-sm text-gray-500 dark:text-gray-400">Total Revenue</p><DollarSign size={18} className="text-green-500" /></div><p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">$41,995.96</p><p className="text-xs text-green-600 dark:text-green-400 mt-1">↑ 12.5% this month</p></div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"><div className="flex items-center justify-between"><p className="text-sm text-gray-500 dark:text-gray-400">Products</p><Package size={18} className="text-brand-blue" /></div><p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">12</p><p className="text-xs text-gray-500 dark:text-gray-400 mt-1">3 categories</p></div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"><div className="flex items-center justify-between"><p className="text-sm text-gray-500 dark:text-gray-400">Total Sales</p><TrendingUp size={18} className="text-brand-gold" /></div><p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">704</p><p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Units sold</p></div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"><div className="flex items-center justify-between"><p className="text-sm text-gray-500 dark:text-gray-400">Avg Rating</p><Star size={18} className="text-brand-gold" /></div><p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">4.7 ⭐</p><p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Based on 704 reviews</p></div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+              <div className="p-6 border-b border-gray-100 dark:border-gray-700"><h2 className="text-lg font-semibold text-gray-900 dark:text-white">Your Products</h2></div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-gray-700/50">
+                    <tr><th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Product</th><th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th><th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Price</th><th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Sales</th><th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Revenue</th><th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Rating</th><th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                    {products.map((product) => (
+                      <tr key={product.name} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{product.name}</td>
+                        <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{product.type}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">${product.price}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{product.sales}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">${product.revenue.toLocaleString()}</td>
+                        <td className="px-4 py-3"><div className="flex items-center gap-1 text-sm"><Star size={14} className="fill-brand-gold text-brand-gold" /><span className="text-gray-900 dark:text-white">{product.rating}</span></div></td>
+                        <td className="px-4 py-3"><span className="inline-flex px-2.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium rounded-full">{product.status}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+File 25: src/app/dashboard/admin/page.tsx
+
+'use client'
+
+import { Users, Package, DollarSign, ShoppingCart, AlertTriangle, BarChart3, LogOut } from 'lucide-react'
+
+export default function AdminDashboard() {
+  return (
+    <div className="min-h-screen bg-surface dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="lg:w-64 flex-shrink-0">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <div className="text-center mb-6 pb-6 border-b border-gray-100 dark:border-gray-700">
+                <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-3"><span className="text-2xl text-white font-bold">A</span></div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Admin Panel</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Super Admin</p>
+              </div>
+              <nav className="space-y-1">
+                {[{ icon: BarChart3, label: 'Overview', active: true }, { icon: Users, label: 'Users' }, { icon: Package, label: 'Products' }, { icon: ShoppingCart, label: 'Orders' }, { icon: DollarSign, label: 'Revenue' }].map((link) => (
+                  <a key={link.label} href="#" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${link.active ? 'bg-red-500 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}><link.icon size={18} />{link.label}</a>
+                ))}
+                <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-700"><button className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg w-full transition-colors"><LogOut size={18} /> Sign Out</button></div>
+              </nav>
+            </div>
+          </div>
+          <div className="flex-1 space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div><h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1><p className="text-gray-500 dark:text-gray-400 mt-1">Manage your marketplace platform.</p></div>
+                <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-lg"><AlertTriangle size={16} /><span>3 pending verifications</span></div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"><p className="text-sm text-gray-500 dark:text-gray-400">Total Users</p><p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">24,582</p><p className="text-xs text-green-600 dark:text-green-400 mt-1">↑ 8.2% this week</p></div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"><p className="text-sm text-gray-500 dark:text-gray-400">Total Products</p><p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">12,847</p><p className="text-xs text-green-600 dark:text-green-400 mt-1">↑ 3.5% this week</p></div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"><p className="text-sm text-gray-500 dark:text-gray-400">Total Orders</p><p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">8,394</p><p className="text-xs text-green-600 dark:text-green-400 mt-1">↑ 12.1% this week</p></div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"><p className="text-sm text-gray-500 dark:text-gray-400">Revenue</p><p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">$84,291</p><p className="text-xs text-green-600 dark:text-green-400 mt-1">↑ 15.3% this week</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+File 26: src/app/products/page.tsx
+
+'use client'
+
+import { useState } from 'react'
+import { Search, SlidersHorizontal, Grid3X3, List, Star, Heart, ChevronDown } from 'lucide-react'
+import Link from 'next/link'
+
+const allProducts = [
+  { id: 1, title: 'Ultimate Web Dev Course', category: 'Online Courses', price: 49.99, rating: 4.8, reviews: 342, image: '🎓', type: 'Digital', badge: 'Bestseller' },
+  { id: 2, title: 'Business Pro Template Pack', category: 'Templates', price: 29.99, rating: 4.6, reviews: 128, image: '📁', type: 'Digital', badge: 'Featured' },
+  { id: 3, title: 'Digital Marketing eBook', category: 'eBooks', price: 19.99, rating: 4.9, reviews: 567, image: '📚', type: 'Digital', badge: 'New' },
+  { id: 4, title: 'Premium Photo Editing Software', category: 'Software', price: 89.99, rating: 4.7, reviews: 234, image: '🖼️', type: 'Digital', badge: 'Popular' },
+  { id: 5, title: 'Python for Beginners Course', category: 'Online Courses', price: 39.99, rating: 4.5, reviews: 189, image: '🐍', type: 'Digital', badge: '' },
+  { id: 6, title: 'Social Media Template Bundle', category: 'Templates', price: 24.99, rating: 4.4, reviews: 96, image: '📱', type: 'Digital', badge: 'Sale' },
+  { id: 7, title: 'SEO Mastery Guide', category: 'eBooks', price: 14.99, rating: 4.7, reviews: 412, image: '🔍', type: 'Digital', badge: '' },
+  { id: 8, title: 'Video Editing Suite Pro', category: 'Software', price: 149.99, rating: 4.8, reviews: 178, image: '🎬', type: 'Digital', badge: '' },
+]
+
+const categories = ['All', 'eBooks', 'Software', 'Online Courses', 'Templates', 'Music & Audio']
+
+export default function ProductsPage() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+
+  const filteredProducts = allProducts.filter(p => {
+    const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory
+    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
+
+  return (
+    <div className="min-h-screen bg-surface dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8"><h1 className="text-3xl font-bold text-gray-900 dark:text-white">Browse <span className="text-brand-blue">Products</span></h1><p className="text-gray-500 dark:text-gray-400 mt-1">{filteredProducts.length} products found</p></div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1"><Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search products..." className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" /></div>
+            <div className="flex items-center gap-3">
+              <div className="flex border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+                <button onClick={() => setViewMode('grid')} className={`p-2.5 ${viewMode === 'grid' ? 'bg-brand-blue text-white' : 'bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}><Grid3X3 size={16} /></button>
+                <button onClick={() => setViewMode('list')} className={`p-2.5 ${viewMode === 'list' ? 'bg-brand-blue text-white' : 'bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}><List size={16} /></button>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-4">
+            {categories.map(cat => (
+              <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedCategory === cat ? 'bg-brand-blue text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>{cat}</button>
+            ))}
+          </div>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {filteredProducts.map((product) => (
+            <Link key={product.id} href={`/products/${product.id}`} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group cursor-pointer">
+              <div className="relative h-44 bg-gradient-to-br from-blue-50 to-amber-50 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center">
+                <span className="text-4xl group-hover:scale-110 transition-transform">{product.image}</span>
+                {product.badge && <span className={`absolute top-3 left-3 text-white text-xs font-bold px-2.5 py-1 rounded-full ${product.badge === 'Bestseller' ? 'bg-brand-gold' : product.badge === 'Featured' ? 'bg-brand-blue' : product.badge === 'New' ? 'bg-green-500' : 'bg-red-500'}`}>{product.badge}</span>}
+                <button className="absolute top-3 right-3 w-8 h-8 bg-white/80 dark:bg-gray-800/80 rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-gray-800"><Heart size={16} className="text-gray-600 dark:text-gray-300" /></button>
+              </div>
+              <div className="p-4 space-y-2">
+                <p className="text-xs text-brand-blue font-medium uppercase tracking-wide">{product.category}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm leading-tight">{product.title}</h3>
+                <div className="flex items-center gap-1.5"><Star size={14} className="fill-brand-gold text-brand-gold" /><span className="text-sm font-medium text-gray-900 dark:text-white">{product.rating}</span><span className="text-xs text-gray-500 dark:text-gray-400">({product.reviews})</span></div>
+                <div className="flex items-center justify-between pt-1"><span className="text-xl font-bold text-gray-900 dark:text-white">${product.price}</span><span className="text-sm font-medium text-brand-blue hover:text-blue-700">View Details</span></div>
+              </div>
+            </Link>
+          ))}
+        </div>
+        {filteredProducts.length === 0 && <div className="text-center py-20"><span className="text-6xl mb-4 block">🔍</span><h3 className="text-xl font-semibold text-gray-900 dark:text-white">No products found</h3><p className="text-gray-500 dark:text-gray-400 mt-2">Try adjusting your search or filter</p></div>}
+      </div>
+    </div>
+  )
+}
+File 27: src/app/products/[id]/page.tsx
+
+'use client'
+
+import { useState } from 'react'
+import { Star, Heart, Share2, ShoppingCart, Shield, Truck, Check } from 'lucide-react'
+import Link from 'next/link'
+import ReviewSystem from '@/components/ReviewSystem'
+
+export default function ProductDetailPage() {
+  const [quantity, setQuantity] = useState(1)
+  const [activeTab, setActiveTab] = useState('description')
+
+  const product = {
+    title: 'Ultimate Web Development Course', category: 'Online Courses', price: 49.99, originalPrice: 79.99,
+    rating: 4.8, reviews: 342, image: '🎓', seller: 'TechEdu Store', sellerRating: 4.9, sellerSales: 1523, type: 'Digital',
+    description: 'Master web development from scratch with this comprehensive course. Learn HTML, CSS, JavaScript, React, Node.js, and more. Includes 200+ video lessons, 50+ projects, and lifetime access.',
+    features: ['200+ HD video lessons', '50+ real-world projects', 'Lifetime access with updates', 'Certificate of completion', 'Source code included', '24/7 Q&A support'],
+    requirements: ['Basic computer skills', 'No coding experience needed', 'A computer with internet access'],
+  }
+
+  return (
+    <div className="min-h-screen bg-surface dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
+          <div className="grid lg:grid-cols-2 gap-0">
+            <div className="bg-gradient-to-br from-blue-50 to-amber-50 dark:from-gray-700 dark:to-gray-600 p-12 flex items-center justify-center min-h-[300px] lg:min-h-[400px]"><span className="text-8xl">{product.image}</span></div>
+            <div className="p-6 lg:p-8 space-y-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-medium text-brand-blue uppercase tracking-wide bg-blue-50 dark:bg-blue-900/30 px-2.5 py-0.5 rounded-full">{product.category}</span>
+                  <span className="text-xs font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2.5 py-0.5 rounded-full">{product.type}</span>
+                </div>
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">{product.title}</h1>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1"><Star size={18} className="fill-brand-gold text-brand-gold" /><span className="font-semibold text-gray-900 dark:text-white">{product.rating}</span></div>
+                <span className="text-sm text-gray-500 dark:text-gray-400">({product.reviews} reviews)</span>
+                <div className="h-4 w-px bg-gray-300 dark:bg-gray-600"></div><span className="text-sm text-gray-500 dark:text-gray-400">{product.sellerSales} sold</span>
+              </div>
+              <div className="flex items-end gap-3">
+                <span className="text-4xl font-bold text-gray-900 dark:text-white">${product.price}</span>
+                <span className="text-xl text-gray-400 dark:text-gray-500 line-through">${product.originalPrice}</span>
+                <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-medium rounded-full">Save ${(product.originalPrice - product.price).toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div className="w-10 h-10 bg-brand-gold rounded-full flex items-center justify-center"><span className="text-lg text-white font-bold">T</span></div>
+                <div><p className="text-sm font-medium text-gray-900 dark:text-white">Sold by {product.seller}</p><div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"><Star size={12} className="fill-brand-gold text-brand-gold" /><span>{product.sellerRating} Seller rating</span><span>• {product.sellerSales} sales</span></div></div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300">-</button>
+                  <span className="px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white border-x border-gray-200 dark:border-gray-700">{quantity}</span>
+                  <button onClick={() => setQuantity(quantity + 1)} className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300">+</button>
+                </div>
+                <Link href="/cart" className="btn-primary flex-1 flex items-center justify-center gap-2"><ShoppingCart size={18} /> Add to Cart</Link>
+                <button className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"><Heart size={18} className="text-gray-600 dark:text-gray-300" /></button>
+              </div>
+              <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-1"><Shield size={16} className="text-green-500" /><span>Secure purchase</span></div>
+                <div className="flex items-center gap-1"><Truck size={16} className="text-brand-blue" /><span>Instant digital delivery</span></div>
+                <div className="flex items-center gap-1"><Check size={16} className="text-brand-gold" /><span>14-day refund policy</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
+          <div className="border-b border-gray-200 dark:border-gray-700">
+            <div className="flex">
+              {['description', 'reviews', 'seller'].map((tab) => (
+                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-6 py-3.5 text-sm font-medium capitalize transition-colors ${activeTab === tab ? 'text-brand-blue border-b-2 border-brand-blue' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}>{tab === 'reviews' ? `Reviews (${product.reviews})` : tab}</button>
+              ))}
+            </div>
+          </div>
+          <div className="p-6">
+            {activeTab === 'description' && (
+              <div className="space-y-6 max-w-3xl">
+                <div><h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">About this course</h3><p className="text-gray-600 dark:text-gray-400 leading-relaxed">{product.description}</p></div>
+                <div><h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">What you'll learn</h3><div className="grid sm:grid-cols-2 gap-2">{product.features.map((f) => (<div key={f} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><Check size={14} className="text-green-500 flex-shrink-0" />{f}</div>))}</div></div>
+                <div><h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Requirements</h3><ul className="space-y-1">{product.requirements.map((r) => (<li key={r} className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-brand-blue rounded-full"></span>{r}</li>))}</ul></div>
+              </div>
+            )}
+            {activeTab === 'reviews' && <ReviewSystem />}
+            {activeTab === 'seller' && (
+              <div className="max-w-2xl">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-brand-gold rounded-full flex items-center justify-center"><span className="text-3xl text-white font-bold">T</span></div>
+                  <div><h3 className="text-xl font-bold text-gray-900 dark:text-white">{product.seller}</h3><div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mt-1"><Star size={14} className="fill-brand-gold text-brand-gold" /><span>{product.sellerRating} Seller rating</span><span>•</span><span>{product.sellerSales} sales</span><span>•</span><span className="text-green-600 dark:text-green-400">Verified Seller</span></div></div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

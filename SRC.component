@@ -1,0 +1,348 @@
+src/components/Header.tsx
+
+'use client'
+
+import { useState } from 'react'
+import { Search, ShoppingCart, Menu, X, Globe, ChevronDown, Moon, Sun } from 'lucide-react'
+import NotificationDropdown from './NotificationDropdown'
+import Link from 'next/link'
+
+export default function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isDark, setIsDark] = useState(false)
+
+  const toggleDark = () => {
+    setIsDark(!isDark)
+    document.documentElement.classList.toggle('dark')
+  }
+
+  return (
+    <header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center gap-8">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center"><span className="text-white font-bold text-sm">4M</span></div>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">4thMan</span>
+            </Link>
+            <div className="hidden lg:flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-brand-blue">
+              <span>Categories</span><ChevronDown size={16} />
+            </div>
+          </div>
+
+          <div className="hidden md:flex flex-1 max-w-lg mx-8">
+            <div className="relative w-full">
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input type="text" placeholder="Search products..." className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent dark:text-white" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button className="hidden lg:flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 hover:text-brand-blue"><Globe size={16} /><span>EN</span><ChevronDown size={14} /></button>
+            <button className="hidden lg:flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 hover:text-brand-blue"><span>USD</span><ChevronDown size={14} /></button>
+            <button onClick={toggleDark} className="text-gray-600 dark:text-gray-300 hover:text-brand-blue">{isDark ? <Sun size={20} /> : <Moon size={20} />}</button>
+            <NotificationDropdown />
+            <Link href="/cart" className="relative text-gray-600 dark:text-gray-300 hover:text-brand-blue">
+              <ShoppingCart size={20} />
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-gold text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
+            </Link>
+            <div className="hidden sm:flex items-center gap-3">
+              <Link href="/auth/signin" className="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-brand-blue">Sign In</Link>
+              <Link href="/auth/register" className="btn-primary text-sm !py-2 !px-4">Register</Link>
+            </div>
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden text-gray-600 dark:text-gray-300">{isMenuOpen ? <X size={24} /> : <Menu size={24} />}</button>
+          </div>
+        </div>
+
+        {isMenuOpen && (
+          <div className="lg:hidden border-t border-gray-100 dark:border-gray-800 py-4 space-y-4">
+            <div className="relative">
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input type="text" placeholder="Search products..." className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300"><Globe size={16} /> Language: English <ChevronDown size={14} /></div>
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">Currency: USD <ChevronDown size={14} /></div>
+            <div className="flex gap-3 pt-2">
+              <Link href="/auth/signin" className="flex-1 text-center text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg py-2.5">Sign In</Link>
+              <Link href="/auth/register" className="flex-1 text-center text-sm font-medium text-white bg-brand-blue rounded-lg py-2.5">Register</Link>
+            </div>
+          </div>
+        )}
+      </div>
+    </header>
+  )
+}
+File 20: src/components/NotificationDropdown.tsx
+
+'use client'
+
+import { useState, useRef, useEffect } from 'react'
+import { Bell, Package, Star, MessageCircle, Truck, DollarSign, X } from 'lucide-react'
+import Link from 'next/link'
+
+const typeIcons: Record<string, React.ElementType> = { order: Package, review: Star, message: MessageCircle, shipping: Truck, payment: DollarSign, system: Bell }
+const typeColors: Record<string, string> = {
+  order: 'text-brand-blue bg-blue-100 dark:bg-blue-900/30',
+  review: 'text-brand-gold bg-amber-100 dark:bg-amber-900/30',
+  message: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30',
+  shipping: 'text-green-600 bg-green-100 dark:bg-green-900/30',
+  payment: 'text-green-600 bg-green-100 dark:bg-green-900/30',
+  system: 'text-gray-600 bg-gray-100 dark:bg-gray-700',
+}
+
+const sampleNotifications = [
+  { id: 1, type: 'order', title: 'New Order Received', description: 'John Doe ordered "Ultimate Web Dev Course" - $49.99', time: '2 min ago', read: false },
+  { id: 2, type: 'payment', title: 'Payment Confirmed', description: 'Payment of $49.99 has been confirmed.', time: '5 min ago', read: false },
+  { id: 3, type: 'review', title: 'New 5-Star Review', description: 'Alice M. left a 5-star review on your course', time: '1 hour ago', read: false },
+]
+
+export default function NotificationDropdown() {
+  const [notifications, setNotifications] = useState(sampleNotifications)
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const unreadCount = notifications.filter(n => !n.read).length
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) setIsOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+  const clearNotif = (id: number) => setNotifications(prev => prev.filter(n => n.id !== id))
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button onClick={() => setIsOpen(!isOpen)} className="relative text-gray-600 dark:text-gray-300 hover:text-brand-blue">
+        <Bell size={20} />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">{unreadCount}</span>
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 max-h-[500px] flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+            <div><h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3><p className="text-xs text-gray-500 dark:text-gray-400">{unreadCount} unread</p></div>
+            {unreadCount > 0 && <button onClick={markAllRead} className="text-xs text-brand-blue hover:underline font-medium">Mark all read</button>}
+          </div>
+          <div className="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+            {notifications.map(notif => {
+              const Icon = typeIcons[notif.type]
+              return (
+                <div key={notif.id} className={`relative p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer ${!notif.read ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''}`}>
+                  {!notif.read && <div className="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 bg-brand-blue rounded-full"></div>}
+                  <div className="flex gap-3">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${typeColors[notif.type]}`}><Icon size={16} /></div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{notif.title}</p>
+                        <button onClick={(e) => { e.stopPropagation(); clearNotif(notif.id) }} className="text-gray-400 hover:text-gray-600 flex-shrink-0"><X size={14} /></button>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{notif.description}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">{notif.time}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <div className="p-3 border-t border-gray-100 dark:border-gray-700 text-center">
+            <Link href="/notifications" className="text-sm text-brand-blue hover:underline font-medium">View All Notifications</Link>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+File 21: src/app/auth/signin/page.tsx
+
+'use client'
+
+import { useState } from 'react'
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+
+export default function SignIn() {
+  const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('Sign in:', { email, password })
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-2">
+            <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center"><span className="text-white font-bold text-lg">4M</span></div>
+            <span className="text-2xl font-bold text-gray-900 dark:text-white">4thMan</span>
+          </Link>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-2">Sign in to your account</p>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
+              <div className="relative">
+                <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="input-field pl-10" required />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
+              <div className="relative">
+                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="input-field pl-10 pr-10" required />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+              </div>
+            </div>
+            <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">Sign In <ArrowRight size={18} /></button>
+          </form>
+          <p className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">Don't have an account? <Link href="/auth/register" className="text-brand-blue font-semibold hover:underline">Register</Link></p>
+        </div>
+      </div>
+    </div>
+  )
+}
+File 22: src/app/auth/register/page.tsx
+
+'use client'
+
+import { useState } from 'react'
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Store } from 'lucide-react'
+import Link from 'next/link'
+
+export default function Register() {
+  const [showPassword, setShowPassword] = useState(false)
+  const [accountType, setAccountType] = useState<'buyer' | 'seller'>('buyer')
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', storeName: '' })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('Register:', { ...formData, accountType })
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-2">
+            <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center"><span className="text-white font-bold text-lg">4M</span></div>
+            <span className="text-2xl font-bold text-gray-900 dark:text-white">4thMan</span>
+          </Link>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Account</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-2">Join millions on 4thMan</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-xl mb-6">
+            <button onClick={() => setAccountType('buyer')} className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${accountType === 'buyer' ? 'bg-white dark:bg-gray-600 text-brand-blue shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}><User size={16} /> Buyer</button>
+            <button onClick={() => setAccountType('seller')} className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${accountType === 'seller' ? 'bg-white dark:bg-gray-600 text-brand-gold shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}><Store size={16} /> Seller</button>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
+              <div className="relative"><User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="John Doe" className="input-field pl-10" required /></div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
+              <div className="relative"><Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="you@example.com" className="input-field pl-10" required /></div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
+              <div className="relative">
+                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input type={showPassword ? 'text' : 'password'} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} placeholder="••••••••" className="input-field pl-10 pr-10" required />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+              </div>
+            </div>
+            {accountType === 'seller' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Store Name</label>
+                <div className="relative"><Store size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input type="text" value={formData.storeName} onChange={(e) => setFormData({...formData, storeName: e.target.value})} placeholder="My Store" className="input-field pl-10" required /></div>
+              </div>
+            )}
+            <div className="flex items-start gap-2"><input type="checkbox" className="mt-1" required /><p className="text-xs text-gray-500 dark:text-gray-400">I agree to the <a href="/terms" className="text-brand-blue hover:underline">Terms of Service</a> and <a href="/privacy" className="text-brand-blue hover:underline">Privacy Policy</a></p></div>
+            <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">Create {accountType === 'seller' ? 'Seller' : ''} Account <ArrowRight size={18} /></button>
+          </form>
+          <p className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">Already have an account? <Link href="/auth/signin" className="text-brand-blue font-semibold hover:underline">Sign In</Link></p>
+        </div>
+      </div>
+    </div>
+  )
+}
+File 23: src/app/dashboard/buyer/page.tsx
+
+'use client'
+
+import { Package, Heart, Clock, Star, Settings, CreditCard, LogOut } from 'lucide-react'
+import Link from 'next/link'
+
+const recentOrders = [
+  { id: '#ORD-001', item: 'Ultimate Web Dev Course', status: 'Delivered', date: 'Mar 12, 2024', price: 49.99 },
+  { id: '#ORD-002', item: 'Business Pro Template Pack', status: 'In Transit', date: 'Mar 15, 2024', price: 29.99 },
+  { id: '#ORD-003', item: 'Digital Marketing eBook', status: 'Processing', date: 'Mar 18, 2024', price: 19.99 },
+]
+
+export default function BuyerDashboard() {
+  return (
+    <div className="min-h-screen bg-surface dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="lg:w-64 flex-shrink-0">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <div className="text-center mb-6 pb-6 border-b border-gray-100 dark:border-gray-700">
+                <div className="w-16 h-16 bg-brand-blue rounded-full flex items-center justify-center mx-auto mb-3"><span className="text-2xl text-white font-bold">JD</span></div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">John Doe</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">john@example.com</p>
+                <span className="inline-block mt-2 px-3 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-brand-blue text-xs font-medium rounded-full">Buyer</span>
+              </div>
+              <nav className="space-y-1">
+                {[{ icon: Package, label: 'My Orders', active: true }, { icon: Heart, label: 'Wishlist', active: false }, { icon: Clock, label: 'Purchase History', active: false }, { icon: Star, label: 'Reviews', active: false }, { icon: CreditCard, label: 'Payment Methods', active: false }, { icon: Settings, label: 'Account Settings', active: false }].map((link) => (
+                  <a key={link.label} href="#" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${link.active ? 'bg-brand-blue text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}><link.icon size={18} />{link.label}</a>
+                ))}
+                <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-700">
+                  <button className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg w-full transition-colors"><LogOut size={18} /> Sign Out</button>
+                </div>
+              </nav>
+            </div>
+          </div>
+          <div className="flex-1 space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6"><h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back, John! 👋</h1><p className="text-gray-500 dark:text-gray-400 mt-1">Here's what's happening with your orders.</p></div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"><p className="text-sm text-gray-500 dark:text-gray-400">Total Orders</p><p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">24</p></div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"><p className="text-sm text-gray-500 dark:text-gray-400">Active Orders</p><p className="text-2xl font-bold text-brand-blue mt-1">3</p></div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"><p className="text-sm text-gray-500 dark:text-gray-400">Wishlist</p><p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">7</p></div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"><p className="text-sm text-gray-500 dark:text-gray-400">Reviews</p><p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">12</p></div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+              <div className="p-6 border-b border-gray-100 dark:border-gray-700"><div className="flex items-center justify-between"><h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Orders</h2><a href="#" className="text-sm text-brand-blue hover:underline">View All</a></div></div>
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                {recentOrders.map((order) => (
+                  <div key={order.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center"><Package size={18} className="text-gray-500 dark:text-gray-400" /></div>
+                      <div><p className="text-sm font-medium text-gray-900 dark:text-white">{order.item}</p><p className="text-xs text-gray-500 dark:text-gray-400">{order.id} • {order.date}</p></div>
+                    </div>
+                    <div className="text-right"><p className="text-sm font-semibold text-gray-900 dark:text-white">${order.price}</p><span className={`text-xs font-medium ${order.status === 'Delivered' ? 'text-green-600 dark:text-green-400' : order.status === 'In Transit' ? 'text-brand-blue' : 'text-brand-gold'}`}>{order.status}</span></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

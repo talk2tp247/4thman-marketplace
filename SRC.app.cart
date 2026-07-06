@@ -1,0 +1,375 @@
+src/app/cart/page.tsx
+
+'use client'
+
+import { useState } from 'react'
+import { Minus, Plus, Trash2, ArrowRight, ShoppingBag } from 'lucide-react'
+import Link from 'next/link'
+
+const initialItems = [
+  { id: 1, title: 'Ultimate Web Dev Course', image: '🎓', price: 49.99, quantity: 1, seller: 'TechEdu Store' },
+  { id: 2, title: 'Business Pro Template Pack', image: '📁', price: 29.99, quantity: 2, seller: 'DesignHub' },
+  { id: 3, title: 'Digital Marketing eBook', image: '📚', price: 19.99, quantity: 1, seller: 'MarketWise' },
+]
+
+export default function CartPage() {
+  const [items, setItems] = useState(initialItems)
+  const [promoCode, setPromoCode] = useState('')
+  const [promoApplied, setPromoApplied] = useState(false)
+
+  const updateQuantity = (id: number, delta: number) => {
+    setItems(prev => prev.map(item => item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item))
+  }
+
+  const removeItem = (id: number) => setItems(prev => prev.filter(item => item.id !== id))
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const discount = promoApplied ? subtotal * 0.1 : 0
+  const total = subtotal - discount
+
+  return (
+    <div className="min-h-screen bg-surface dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center gap-3 mb-8"><ShoppingBag size={24} className="text-brand-blue" /><h1 className="text-3xl font-bold text-gray-900 dark:text-white">Shopping <span className="text-brand-blue">Cart</span></h1><span className="text-sm text-gray-500 dark:text-gray-400">({items.length} items)</span></div>
+        {items.length === 0 ? (
+          <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+            <span className="text-6xl mb-4 block">🛒</span><h3 className="text-xl font-semibold text-gray-900 dark:text-white">Your cart is empty</h3>
+            <p className="text-gray-500 dark:text-gray-400 mt-2 mb-6">Start shopping to add items to your cart</p>
+            <Link href="/products" className="btn-primary inline-flex items-center gap-2">Browse Products <ArrowRight size={18} /></Link>
+          </div>
+        ) : (
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-4">
+              {items.map((item) => (
+                <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 flex items-center gap-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-amber-50 dark:from-gray-700 dark:to-gray-600 rounded-xl flex items-center justify-center flex-shrink-0"><span className="text-2xl">{item.image}</span></div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm">{item.title}</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Sold by {item.seller}</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white mt-1">${item.price}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <button onClick={() => updateQuantity(item.id, -1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><Minus size={14} /></button>
+                      <span className="px-3 py-1.5 text-sm font-medium text-gray-900 dark:text-white border-x border-gray-200 dark:border-gray-700">{item.quantity}</span>
+                      <button onClick={() => updateQuantity(item.id, 1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><Plus size={14} /></button>
+                    </div>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white w-20 text-right">${(item.price * item.quantity).toFixed(2)}</p>
+                    <button onClick={() => removeItem(item.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 h-fit sticky top-24">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Order Summary</h2>
+              <div className="mb-4">
+                <div className="flex gap-2">
+                  <input type="text" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} placeholder="Enter promo code" className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+                  <button onClick={() => setPromoApplied(true)} className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600">Apply</button>
+                </div>
+                {promoApplied && <p className="text-xs text-green-600 dark:text-green-400 mt-1">✅ 10% discount applied!</p>}
+              </div>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between text-gray-600 dark:text-gray-400"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
+                {promoApplied && <div className="flex justify-between text-green-600 dark:text-green-400"><span>Discount (10%)</span><span>-${discount.toFixed(2)}</span></div>}
+                <div className="flex justify-between text-gray-600 dark:text-gray-400"><span>Shipping</span><span className="text-green-600 dark:text-green-400">Free</span></div>
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-3 flex justify-between text-lg font-bold text-gray-900 dark:text-white"><span>Total</span><span>${total.toFixed(2)}</span></div>
+              </div>
+              <Link href="/checkout" className="btn-primary w-full flex items-center justify-center gap-2 mt-6">Proceed to Checkout <ArrowRight size={18} /></Link>
+              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400"><span>🔒</span><span>Secure checkout</span></div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+File 29: src/app/checkout/page.tsx
+
+'use client'
+
+import { useState } from 'react'
+import { CreditCard, Lock, ArrowLeft, Check } from 'lucide-react'
+import Link from 'next/link'
+
+export default function CheckoutPage() {
+  const [formData, setFormData] = useState({ fullName: '', email: '', address: '', city: '', state: '', zip: '', country: 'United States', cardNumber: '', cardName: '', expiry: '', cvv: '' })
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [isComplete, setIsComplete] = useState(false)
+  const total = 89.97
+
+  const handlePlaceOrder = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsProcessing(true)
+    setTimeout(() => { setIsProcessing(false); setIsComplete(true) }, 2000)
+  }
+
+  if (isComplete) {
+    return (
+      <div className="min-h-screen bg-surface dark:bg-gray-900 flex items-center justify-center px-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+          <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6"><Check size={40} className="text-green-600 dark:text-green-400" /></div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Order Placed! 🎉</h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">Your order has been confirmed</p>
+          <div className="flex gap-3 justify-center"><Link href="/dashboard/buyer" className="btn-primary">Track Order</Link><Link href="/products" className="px-6 py-3 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Continue Shopping</Link></div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-surface dark:bg-gray-900">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center gap-3 mb-8"><Link href="/cart" className="text-gray-400 hover:text-gray-600"><ArrowLeft size={20} /></Link><Lock size={20} className="text-brand-blue" /><h1 className="text-2xl font-bold text-gray-900 dark:text-white">Secure Checkout</h1></div>
+        <form onSubmit={handlePlaceOrder}>
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Shipping Information</h2>
+                <div className="space-y-4">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label><input type="text" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} className="input-field" required /></div>
+                    <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label><input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="input-field" required /></div>
+                  </div>
+                  <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label><input type="text" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} className="input-field" required /></div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="col-span-2"><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label><input type="text" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="input-field" required /></div>
+                    <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State</label><input type="text" value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} className="input-field" required /></div>
+                    <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ZIP Code</label><input type="text" value={formData.zip} onChange={(e) => setFormData({...formData, zip: e.target.value})} className="input-field" required /></div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment Method</h2>
+                <div className="flex items-center gap-3 mb-4"><CreditCard size={18} className="text-brand-blue" /><span className="text-sm font-medium text-gray-700 dark:text-gray-300">Credit / Debit Card</span></div>
+                <div className="space-y-4">
+                  <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Card Number</label><input type="text" value={formData.cardNumber} onChange={(e) => setFormData({...formData, cardNumber: e.target.value})} placeholder="4242 4242 4242 4242" className="input-field" required /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cardholder Name</label><input type="text" value={formData.cardName} onChange={(e) => setFormData({...formData, cardName: e.target.value})} className="input-field" required /></div>
+                  <div className="grid grid-cols-2 gap-4"><div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expiry Date</label><input type="text" value={formData.expiry} onChange={(e) => setFormData({...formData, expiry: e.target.value})} placeholder="MM/YY" className="input-field" required /></div><div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CVV</label><input type="text" value={formData.cvv} onChange={(e) => setFormData({...formData, cvv: e.target.value})} placeholder="123" className="input-field" required /></div></div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 h-fit sticky top-24">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Order</h2>
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-3 space-y-2">
+                <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-white"><span>Total</span><span>${total.toFixed(2)}</span></div>
+              </div>
+              <button type="submit" disabled={isProcessing} className="btn-primary w-full mt-6 flex items-center justify-center gap-2 disabled:opacity-70">{isProcessing ? 'Processing...' : <><Lock size={16} /> Place Order - ${total.toFixed(2)}</>}</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+File 30: src/app/orders/[id]/page.tsx
+
+'use client'
+
+import { Package, CheckCircle2, Truck, Clock, ChevronLeft } from 'lucide-react'
+import Link from 'next/link'
+
+const timeline = [
+  { status: 'Order Placed', date: 'Mar 18, 2024 - 2:30 PM', completed: true, description: 'Your order has been confirmed and is being processed.' },
+  { status: 'Payment Confirmed', date: 'Mar 18, 2024 - 2:32 PM', completed: true, description: 'Payment of $49.99 has been successfully processed.' },
+  { status: 'Processing', date: 'Mar 19, 2024 - 9:00 AM', completed: true, description: 'Seller is preparing your order.' },
+  { status: 'Shipped', date: 'Mar 20, 2024 - 11:15 AM', completed: false, description: 'Your package is on its way! Estimated delivery: Mar 24-26.' },
+  { status: 'Delivered', date: '', completed: false, description: 'Awaiting delivery confirmation.' },
+]
+
+export default function OrderTrackingPage() {
+  return (
+    <div className="min-h-screen bg-surface dark:bg-gray-900">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Link href="/dashboard/buyer" className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-brand-blue mb-6"><ChevronLeft size={16} /> Back to Dashboard</Link>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Order #ORD-4521</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Placed on March 18, 2024</p>
+        </div>
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Order Status</h2>
+          <div className="relative">
+            <div className="absolute left-5 top-2 bottom-2 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+            <div className="space-y-8">
+              {timeline.map((step, index) => (
+                <div key={step.status} className="relative flex items-start gap-4">
+                  <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${step.completed ? 'bg-green-100 dark:bg-green-900/30' : index === timeline.findIndex(t => !t.completed) ? 'bg-brand-blue/10' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                    {step.completed ? <CheckCircle2 size={20} className="text-green-600 dark:text-green-400" /> : index === timeline.findIndex(t => !t.completed) ? <Clock size={20} className="text-brand-blue" /> : <div className="w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full"></div>}
+                  </div>
+                  <div className="flex-1 pt-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className={`font-semibold ${step.completed ? 'text-gray-900 dark:text-white' : index === timeline.findIndex(t => !t.completed) ? 'text-brand-blue' : 'text-gray-400 dark:text-gray-500'}`}>{step.status}</h3>
+                      {step.date && <span className="text-xs text-gray-500 dark:text-gray-400">{step.date}</span>}
+                    </div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{step.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+File 31: src/app/notifications/page.tsx
+
+'use client'
+
+import { useState } from 'react'
+import { Bell, Package, Star, MessageCircle, Truck, DollarSign, X } from 'lucide-react'
+import Link from 'next/link'
+
+const allNotifications = [
+  { id: 1, type: 'order', title: 'New Order Received', description: 'John Doe ordered "Ultimate Web Dev Course" - $49.99', time: '2 min ago', read: false },
+  { id: 2, type: 'payment', title: 'Payment Confirmed', description: 'Payment of $49.99 has been confirmed.', time: '5 min ago', read: false },
+  { id: 3, type: 'review', title: 'New 5-Star Review', description: 'Alice M. left a 5-star review.', time: '1 hour ago', read: false },
+  { id: 4, type: 'shipping', title: 'Order Shipped', description: '#ORD-4519 has been shipped.', time: '3 hours ago', read: true },
+  { id: 5, type: 'message', title: 'New Message', description: 'Sarah Smith sent a message.', time: '5 hours ago', read: true },
+  { id: 6, type: 'system', title: 'Weekly Report Ready', description: 'Your sales report is available.', time: '1 day ago', read: true },
+  { id: 7, type: 'payment', title: 'Payout Processed', description: '$1,247.50 sent to your bank.', time: '3 days ago', read: true },
+]
+
+const typeIcons: Record<string, React.ElementType> = { order: Package, review: Star, message: MessageCircle, shipping: Truck, payment: DollarSign, system: Bell }
+const typeColors: Record<string, string> = {
+  order: 'text-brand-blue bg-blue-100 dark:bg-blue-900/30', review: 'text-brand-gold bg-amber-100 dark:bg-amber-900/30',
+  message: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30', shipping: 'text-green-600 bg-green-100 dark:bg-green-900/30',
+  payment: 'text-green-600 bg-green-100 dark:bg-green-900/30', system: 'text-gray-600 bg-gray-100 dark:bg-gray-700',
+}
+
+export default function NotificationsPage() {
+  const [notifications, setNotifications] = useState(allNotifications)
+  const [filter, setFilter] = useState<'all' | 'unread'>('all')
+  const filtered = filter === 'all' ? notifications : notifications.filter(n => !n.read)
+  const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+  const removeNotif = (id: number) => setNotifications(prev => prev.filter(n => n.id !== id))
+
+  return (
+    <div className="min-h-screen bg-surface dark:bg-gray-900">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <div><h1 className="text-2xl font-bold text-gray-900 dark:text-white">Notifications</h1><p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{notifications.filter(n => !n.read).length} unread</p></div>
+          <div className="flex gap-2">
+            <button onClick={() => setFilter(filter === 'all' ? 'unread' : 'all')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === 'all' ? 'bg-brand-blue text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'}`}>{filter === 'all' ? 'All' : 'Unread'}</button>
+            <button onClick={markAllRead} className="px-4 py-2 text-sm font-medium text-brand-blue hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg border border-gray-200 dark:border-gray-700">Mark All Read</button>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {filtered.map(notif => {
+            const Icon = typeIcons[notif.type]
+            return (
+              <div key={notif.id} className={`bg-white dark:bg-gray-800 rounded-xl p-4 flex items-start gap-4 shadow-sm transition-colors ${!notif.read ? 'border-l-4 border-brand-blue' : ''}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${typeColors[notif.type]}`}><Icon size={18} /></div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <div><p className="font-medium text-gray-900 dark:text-white">{notif.title}</p><p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{notif.description}</p></div>
+                    <button onClick={() => removeNotif(notif.id)} className="text-gray-400 hover:text-gray-600 ml-4 flex-shrink-0"><X size={16} /></button>
+                  </div>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{notif.time}</p>
+                </div>
+              </div>
+            )
+          })}
+          {filtered.length === 0 && <div className="text-center py-20"><Bell size={48} className="mx-auto text-gray-300 dark:text-gray-600 mb-4" /><h3 className="text-lg font-semibold text-gray-900 dark:text-white">No notifications</h3></div>}
+        </div>
+      </div>
+    </div>
+  )
+}
+File 32: src/app/dashboard/seller/add-product/page.tsx
+
+'use client'
+
+import { useState } from 'react'
+import { Plus, X, ArrowLeft, Check } from 'lucide-react'
+import Link from 'next/link'
+
+export default function AddProductPage() {
+  const [productType, setProductType] = useState<'digital' | 'physical'>('digital')
+  const [formData, setFormData] = useState({ title: '', description: '', category: '', price: '', comparePrice: '', tags: '' })
+  const [isPublished, setIsPublished] = useState(false)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsPublished(true)
+    setTimeout(() => setIsPublished(false), 3000)
+  }
+
+  if (isPublished) {
+    return (
+      <div className="min-h-screen bg-surface dark:bg-gray-900 flex items-center justify-center px-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+          <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6"><Check size={40} className="text-green-600 dark:text-green-400" /></div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Product Published! 🎉</h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">Your product is now live on 4thMan</p>
+          <div className="flex gap-3 justify-center"><Link href="/dashboard/seller" className="btn-primary">Back to Dashboard</Link><Link href="/products" className="px-6 py-3 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">View Product</Link></div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-surface dark:bg-gray-900">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center gap-3 mb-8"><Link href="/dashboard/seller" className="text-gray-400 hover:text-gray-600"><ArrowLeft size={20} /></Link><Plus size={20} className="text-brand-gold" /><h1 className="text-2xl font-bold text-gray-900 dark:text-white">Add New Product</h1></div>
+        <form onSubmit={handleSubmit}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 space-y-4">
+            <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Title</label><input type="text" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} placeholder="e.g., Ultimate Web Development Course" className="input-field" required /></div>
+            <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label><textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Describe your product in detail..." rows={5} className="input-field resize-none" required /></div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label><select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} className="input-field" required><option value="">Select category</option><option value="eBooks">eBooks</option><option value="Software">Software</option><option value="Online Courses">Online Courses</option><option value="Templates">Templates</option></select></div>
+              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Type</label><div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setProductType('digital')} className={`py-2.5 rounded-lg text-sm font-medium border transition-colors ${productType === 'digital' ? 'border-brand-blue bg-blue-50 dark:bg-blue-900/30 text-brand-blue' : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'}`}>Digital</button><button type="button" onClick={() => setProductType('physical')} className={`py-2.5 rounded-lg text-sm font-medium border transition-colors ${productType === 'physical' ? 'border-brand-blue bg-blue-50 dark:bg-blue-900/30 text-brand-blue' : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'}`}>Physical</button></div></div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price ($)</label><input type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} placeholder="29.99" step="0.01" min="0" className="input-field" required /></div>
+              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Compare Price ($)</label><input type="number" value={formData.comparePrice} onChange={(e) => setFormData({...formData, comparePrice: e.target.value})} placeholder="49.99" step="0.01" min="0" className="input-field" /></div>
+            </div>
+            <button type="submit" className="btn-primary w-full">Publish Product</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+File 33: src/app/dashboard/seller/orders/page.tsx
+
+'use client'
+
+import { useState } from 'react'
+import { Package, Search, Eye, CheckCircle, Truck, XCircle } from 'lucide-react'
+
+const initialOrders = [
+  { id: '#ORD-4521', customer: 'John Doe', items: 'Ultimate Web Dev Course', amount: 49.99, date: 'Mar 18, 2024', status: 'Pending' as const },
+  { id: '#ORD-4520', customer: 'Sarah Smith', items: 'Business Pro Template Pack', amount: 29.99, date: 'Mar 17, 2024', status: 'Processing' as const },
+  { id: '#ORD-4519', customer: 'Mike Johnson', items: 'Premium Photo Editing Software', amount: 89.99, date: 'Mar 16, 2024', status: 'Shipped' as const },
+  { id: '#ORD-4518', customer: 'Emily Davis', items: 'Digital Marketing eBook', amount: 19.99, date: 'Mar 15, 2024', status: 'Delivered' as const },
+  { id: '#ORD-4517', customer: 'Alex Brown', items: 'Python Course', amount: 39.99, date: 'Mar 14, 2024', status: 'Cancelled' as const },
+]
+
+type OrderStatus = 'All' | 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
+
+export default function SellerOrdersPage() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<OrderStatus>('All')
+  const [orders, setOrders] = useState(initialOrders)
+  const [selectedOrder, setSelectedOrder] = useState<typeof initialOrders[0] | null>(null)
+
+  const filteredOrders = orders.filter(order => {
+    const matchesStatus = statusFilter === 'All' || order.status === statusFilter
+    const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) || order.customer.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesStatus && matchesSearch
+  })
+
+  const statusCounts = { All: orders.length, Pending: orders.filter(o => o.status === 'Pending').length, Processing: orders.filter(o => o.status === 'Processing').length, Shipped: orders.filter(o => o.status === 'Shipped').length, Delivered: orders.filter(o => o.status === 'Delivered').length, Cancelled: orders.filter(o => o.status === 'Cancelled').length }
+
+  const updateOrderStatus = (orderId: string, newStatus: typeof orders[0]['status']) => {
+    setOrders(prev => prev.map(order => order.id === orderId ? { ...order, status: newStatus } : order))
+    setSelectedOrder(null)
+  }
+
+  const statusStyles: Record<string, string> = { Pending: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400', Processing: 'bg-blue-100 dark:bg-blue-900/30 text-brand-blue', Shipped: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400', Delivered: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400', Cancelled: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' }
+
+  if (selectedOrder) {
+    return (
+      <div className="min-h-screen bg-surface dark:bg-gray-900"><div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <button onClick={() => setSelectedOrder(null)} className="text-sm text-gray-500 dark:text-gray-400 hover:text-brand-blue mb-6">← Back to Orders</button>
+        <
