@@ -1,0 +1,82 @@
+// src/app/api/auth/register/route.ts (UPDATED with Refresh Token)
+
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
+import { generateTokenPair } from '@/lib/jwt'
+
+const prisma = new PrismaClient()
+
+export async function POST(req: Request) {
+  try {
+    const { name, email, password, accountType, storeName } = await req.json()
+
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) {
+      return NextResponse.json(
+        { error: 'Email already registered' },
+        { status: 400 }
+      )
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        accountType,
+        storeName: accountType === 'seller' ? storeName : null,
+      },
+    })
+
+    // ✅ Generate BOTH access + refresh tokens
+    const { accessToken, refreshToken } = generateTokenPair({
+      userId: user.id,
+      email: user.email,
+      accountType: user.accountType as 'buyer' | 'seller' | 'admin',
+    })
+
+    // Create response with user data
+    const response = NextResponse.json(
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        accountType: user.accountType,
+      },
+      { status: 201 }
+    )
+
+    // ✅ Set ACCESS TOKEN cookie (7 days)
+    response.cookies.set('authToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+    })
+
+    // ✅ Set REFRESH TOKEN cookie (365 days / 1 YEAR)
+    response.cookies.set('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 365 * 24 * 60 * 60, // 365 days = 1 YEAR
+    })
+
+    // Welcome notification
+    await prisma.notification.create({
+      data: {
+        userId: user.id,
+        type: 'system',
+        title: 'Welcome to 4thMan!',
+        description: `Welcome${accountType === 'seller' ? ' seller' : ''}! Start exploring products${accountType === 'seller' ? ' or list your first product' : ''}.`,
+      },
+    })
+
+    return response
+  } catch (error) {
+    return NextResponse.json({ error: 'Registration failed' }, { status: 500 })
+  }
+}
